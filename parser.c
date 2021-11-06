@@ -1,296 +1,357 @@
 #include "parser.h"
 
-STATE_MACHINE_RETURN_VALUE at_command_parse(u_int8_t char_crt){
-	static u_int8_t stare=0;
-	while(1)
-	{
-		switch(stare)
+STATE_MACHINE_RETURN_VALUE at_command_parse(char* c){
+	static u_int8_t node=0;
+	u_int8_t lines=0;
+	u_int8_t line_size=0;
+	u_int8_t data_index;
+	char *start=0;
+	while(c!=0)
+	{	
+		if(lines>=AT_COMMAND_MAX_LINES && line_size >= AT_COMMAND_MAX_LINE_SIZE)
 		{
-			case 0:
+			at_command_data.status=STATE_MACHINE_READY_WITH_ERROR;
+			return at_command_data.status;
+		}
+		while(1)
+		{	
+			char char_crt = *c;
+			switch(node)
 			{
-				if(char_crt == 13)
+				case 0:
 				{
-					stare=1;
-					return STATE_MACHINE_NOT_READY;
+					if(char_crt == 13)
+					{
+						node=1;
+						c++;
+					}
+					else
+					{
+						at_command_data.status = STATE_MACHINE_READY_WITH_ERROR;
+						return at_command_data.status;
+					}
+					break;
 				}
-				else
+				case 1:
 				{
-					return STATE_MACHINE_READY_WITH_ERROR;
+					if(char_crt == 10)
+					{
+						node=2;
+						c++;
+					}
+					else
+					{
+						at_command_data.status = STATE_MACHINE_READY_WITH_ERROR;
+						return at_command_data.status;
+					}
+					break;
+				}
+				case 2:
+				{
+					if(char_crt == 'E')
+					{
+						node=25;
+						c++;
+					}
+					else if(char_crt == '+')
+					{
+						node=7;
+						start=c;
+						c++;
+						line_size++;
+					}
+					else if(char_crt == 'O')
+					{
+						node=3;
+						c++;
+					}
+					else
+					{
+						at_command_data.status = STATE_MACHINE_READY_WITH_ERROR;
+						return at_command_data.status;
+					}
+					break;
+				}
+				case 3:
+				{
+					if(char_crt == 'K')
+					{
+						node=4;
+						c++;
+					}
+					else
+					{
+						at_command_data.status = STATE_MACHINE_READY_WITH_ERROR;
+						return at_command_data.status;
+					}
+					break;
+				}
+				case 4:
+				{
+					if(char_crt == 13)
+					{
+						node = 5;
+						c++;
+					}
+					else
+					{
+						at_command_data.status = STATE_MACHINE_READY_WITH_ERROR;
+						return at_command_data.status;
+					}
+					break;
+				}
+				case 5:
+				{
+					if(char_crt == 10)
+					{
+						node=6;
+						c++;
+					}
+					else
+					{
+						at_command_data.status = STATE_MACHINE_READY_WITH_ERROR;
+						return at_command_data.status;
+					}
+					break;
+				}
+				case 6:
+				{
+					at_command_data.status=STATE_MACHINE_READY_OK;
+					return at_command_data.status;
+				}
+				case 7:
+				{
+					node=8;
+					break;
+				}
+				case 8:
+				{
+					if(char_crt >= 31 && char_crt <= 126)
+					{
+						node=8;
+						c++;
+						line_size++;
+					}
+					else if(char_crt == 13)
+					{
+						node=18;
+						c++;
+					}
+					else 
+					{
+						at_command_data.status = STATE_MACHINE_READY_WITH_ERROR;
+						return at_command_data.status;
+					}
+					break;
+				}
+				case 18:
+				{	
+					if(char_crt == 10)
+					{
+						node=19;
+						memset(at_command_data.data[data_index],'\0',AT_COMMAND_MAX_LINE_SIZE);
+						memcpy(at_command_data.data[data_index++],start,line_size);
+						printf("String copied:%s\n",at_command_data.data[data_index-1]);
+						line_size=0;
+						lines++;
+						c++;
+					}
+					else
+					{
+						at_command_data.status = STATE_MACHINE_READY_WITH_ERROR;
+						return at_command_data.status;
+					}
+					break;
+				}
+				case 19:
+				{	
+					
+					if(char_crt == '+')
+					{
+						node=7;
+						start=c;
+						c++;
+						line_size++;
+					}
+					else if(char_crt == 13)
+					{
+						node=23;
+						c++;
+					}
+					else
+					{
+						at_command_data.status = STATE_MACHINE_READY_WITH_ERROR;
+						return at_command_data.status;
+					}
+					break;
+				}
+				case 23:
+				{
+					if(char_crt == 10)
+					{
+						node=24;
+						c++;
+					}
+					else
+					{
+						at_command_data.status = STATE_MACHINE_READY_WITH_ERROR;
+						return at_command_data.status;
+					}
+					break;
+				}
+				case 24:
+				{
+					if(char_crt == 'O')
+					{
+						node=20;
+						c++;
+					}
+					else if(char_crt == 'E'){
+						node=25;
+						c++;
+					}
+					else
+					{
+						at_command_data.status = STATE_MACHINE_READY_WITH_ERROR;
+						return at_command_data.status;
+					}
+					break;
+				}
+				case 20:
+				{
+					if(char_crt == 'K')
+					{
+						node=21;
+						c++;
+					}
+					else 
+					{
+					    at_command_data.status = STATE_MACHINE_READY_WITH_ERROR;
+						return at_command_data.status;
+					}
+					break;
+				}
+				case 21:
+				{
+					if(char_crt == 13)
+					{
+						node=22;
+						c++;
+					}
+					else
+					{
+						at_command_data.status = STATE_MACHINE_READY_WITH_ERROR;
+						return at_command_data.status;
+					}
+					break;
+				}
+				case 22:
+				{
+					if(char_crt == 10)
+					{
+						node=6;
+						c++;
+					}
+					else
+					{
+						at_command_data.status = STATE_MACHINE_READY_WITH_ERROR;
+						return at_command_data.status;
+					}
+					break;
+				}
+				case 25:
+				{
+					if(char_crt == 'R')
+					{
+						node=26;
+						c++;
+					}
+					else
+					{
+						at_command_data.status = STATE_MACHINE_READY_WITH_ERROR;
+						return at_command_data.status;
+					}
+					break;
+				}
+				case 26:
+				{
+					if(char_crt == 'R')
+					{
+						node=27;
+						c++;
+					}
+					else
+					{
+						at_command_data.status = STATE_MACHINE_READY_WITH_ERROR;
+						return at_command_data.status;
+					}
+					break;
+				}
+				case 27:
+				{
+					if(char_crt == 'O')
+					{
+						node=28;
+						c++;
+					}
+					else
+					{
+						at_command_data.status = STATE_MACHINE_READY_WITH_ERROR;
+						return at_command_data.status;
+					}
+					break;
+				}
+				case 28:
+				{
+					if(char_crt == 'R')
+					{
+						node=29;
+						c++;
+					}
+					else
+					{
+						at_command_data.status = STATE_MACHINE_READY_WITH_ERROR;
+						return at_command_data.status;
+					}
+					break;
+				}
+				case 29:
+				{
+					if(char_crt == 13)
+					{
+						node=30;
+						c++;
+					}
+					else
+					{
+						at_command_data.status = STATE_MACHINE_READY_WITH_ERROR;
+						return at_command_data.status;
+					}
+					break;
+				}
+				case 30:
+				{
+					if(char_crt == 10)
+					{
+						node=31;
+						c++;
+					}
+					else
+					{
+						at_command_data.status = STATE_MACHINE_READY_WITH_ERROR;
+						return at_command_data.status;
+					}
+					break;
+				}
+				case 31:
+				{
+					at_command_data.status = STATE_MACHINE_READY_WITH_ERROR;
+					return at_command_data.status;
 				}
 			}
-			case 1:
-			{
-				if(char_crt == 10)
-				{
-					stare=2;
-					return STATE_MACHINE_NOT_READY;
-				}
-				else
-				{
-					return STATE_MACHINE_READY_WITH_ERROR;
-				}
-			}
-			case 2:
-			{
-				if(char_crt == 'E')
-				{
-					stare=25;
-					return STATE_MACHINE_NOT_READY;
-				}
-				else if(char_crt == '+')
-				{
-					stare=7;
-					return STATE_MACHINE_NOT_READY;
-				}
-				else if(char_crt == 'O')
-				{
-					stare=3;
-					return STATE_MACHINE_NOT_READY;
-				}
-				else
-				{
-					return STATE_MACHINE_READY_WITH_ERROR;
-				}
-			}
-			case 3:
-			{
-				if(char_crt == 'K')
-				{
-					stare=4;
-					return STATE_MACHINE_NOT_READY;
-				}
-				else
-				{
-					return STATE_MACHINE_READY_WITH_ERROR;
-				}
-			}
-			case 4:
-			{
-				if(char_crt == 13)
-				{
-					stare = 5;
-					return STATE_MACHINE_NOT_READY;
-				}
-				else
-				{
-					return STATE_MACHINE_READY_WITH_ERROR;
-				}
-			}
-			case 5:
-			{
-				if(char_crt == 10)
-				{
-					stare=6;
-					return STATE_MACHINE_NOT_READY;
-				}
-				else
-				{
-					return STATE_MACHINE_READY_WITH_ERROR;
-				}
-			}
-			case 6:
-			{
-				return STATE_MACHINE_READY_OK;
-			}
-			case 7:
-			{
-				stare=8;
-				return STATE_MACHINE_NOT_READY;
-			}
-			case 8:
-			{
-				if(char_crt >= 31 && char_crt <= 126)
-				{
-					stare=8;
-					return STATE_MACHINE_NOT_READY;
-				}
-				else
-				{
-					stare=17;
-					return STATE_MACHINE_NOT_READY;
-				}
-			}
-			case 17:
-			{
-				if(char_crt == 13)
-				{
-					stare=18;
-					return STATE_MACHINE_NOT_READY;
-				}
-				else
-				{
-					return STATE_MACHINE_READY_WITH_ERROR;
-				}
-			}
-			case 18:
-			{
-				if(char_crt == 10)
-				{
-					stare=19;
-					return STATE_MACHINE_NOT_READY;
-				}
-				else
-				{
-					return STATE_MACHINE_READY_WITH_ERROR;
-				}
-			}
-			case 19:
-			{
-				if(char_crt == '+')
-				{
-					stare=7;
-					return STATE_MACHINE_NOT_READY;
-				}
-				else if(char_crt == 13)
-				{
-					stare=23;
-					return STATE_MACHINE_NOT_READY;
-				}
-				else
-				{
-					return STATE_MACHINE_READY_WITH_ERROR;
-				}
-			}
-			case 23:
-			{
-				if(char_crt == 10)
-				{
-					stare=24;
-					return STATE_MACHINE_NOT_READY;
-				}
-				else
-				{
-					return STATE_MACHINE_READY_WITH_ERROR;
-				}
-			}
-			case 24:
-			{
-				if(char_crt == 'O')
-				{
-					stare=20;
-					return STATE_MACHINE_NOT_READY;
-				}
-				else if(char_crt == 'E'){
-					stare=25;
-					return STATE_MACHINE_NOT_READY;
-				}
-				else
-				{
-					return STATE_MACHINE_READY_WITH_ERROR;
-				}
-			}
-			case 20:
-			{
-				if(char_crt == 'K')
-				{
-					stare=21;
-					return STATE_MACHINE_NOT_READY;
-				}
-				else 
-				{
-					return STATE_MACHINE_READY_WITH_ERROR;
-				}
-			}
-			case 21:
-			{
-				if(char_crt == 13)
-				{
-					stare=22;
-					return STATE_MACHINE_NOT_READY;
-				}
-				else
-				{
-					return STATE_MACHINE_READY_WITH_ERROR;
-				}
-			}
-			case 22:
-			{
-				if(char_crt == 10)
-				{
-					stare=6;
-					return STATE_MACHINE_NOT_READY;
-				}
-				else
-				{
-					return STATE_MACHINE_READY_WITH_ERROR;
-				}
-			}
-			case 25:
-			{
-				if(char_crt == 'R')
-				{
-					stare=26;
-					return STATE_MACHINE_NOT_READY;
-				}
-				else
-				{
-					return STATE_MACHINE_READY_WITH_ERROR;
-				}
-			}
-			case 26:
-			{
-				if(char_crt == 'R')
-				{
-					stare=27;
-					return STATE_MACHINE_NOT_READY;
-				}
-				else
-				{
-					return STATE_MACHINE_READY_WITH_ERROR;
-				}
-			}
-			case 27:
-			{
-				if(char_crt == 'O')
-				{
-					stare=28;
-					return STATE_MACHINE_NOT_READY;
-				}
-				else
-				{
-					return STATE_MACHINE_READY_WITH_ERROR;
-				}
-			}
-			case 28:
-			{
-				if(char_crt == 'R')
-				{
-					stare=29;
-					return STATE_MACHINE_NOT_READY;
-				}
-				else
-				{
-					return STATE_MACHINE_READY_WITH_ERROR;
-				}
-			}
-			case 29:
-			{
-				if(char_crt == 13)
-				{
-					stare=30;
-					return STATE_MACHINE_NOT_READY;
-				}
-				else
-				{
-					return STATE_MACHINE_READY_WITH_ERROR;
-				}
-			}
-			case 30:
-			{
-				if(char_crt == 10)
-				{
-					stare=31;
-					return STATE_MACHINE_NOT_READY;
-				}
-				else
-				{
-					return STATE_MACHINE_READY_WITH_ERROR;
-				}
-			}
-			case 31:
-			{
-				return STATE_MACHINE_READY_WITH_ERROR;
-			}
+			at_command_data.line_count=lines;
 		}
 	}
+	return at_command_data.status;
+
 }
