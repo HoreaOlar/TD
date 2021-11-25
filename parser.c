@@ -1,12 +1,12 @@
 #include "parser.h"
 
-STATE_MACHINE_RETURN_VALUE at_command_parse(char char_crt){
+STATE_MACHINE_RETURN_VALUE at_command_parse(char char_crt, int unusual_flag){
 	if(at_command_data.line_count >= AT_COMMAND_MAX_LINE_SIZE)
 	{
-		return STATE_MACHINE_READY_WITH_ERROR;
+		return STATE_MACHINE_READY_TOO_MANY_LINES;
 	}	
-	printf("Current node: %d\n",at_command_data.node);
-	printf("at_command_parse character: %c\n",char_crt);
+	// printf("Current node: %d\n",at_command_data.node);
+	// printf("at_command_parse character: %c\n",char_crt);
 	switch(at_command_data.node)
 	{
 		
@@ -19,14 +19,13 @@ STATE_MACHINE_RETURN_VALUE at_command_parse(char char_crt){
 			}
 			else if (char_crt == '+')
 			{
-				printf("aici\n");
 				at_command_data.node=7;
 				return STATE_MACHINE_NOT_READY;
 			}
 			
 			else
 			{
-				return STATE_MACHINE_READY_WITH_ERROR;
+				return STATE_MACHINE_NOT_READY_ERROR;
 			}
 			break;
 		}
@@ -39,7 +38,7 @@ STATE_MACHINE_RETURN_VALUE at_command_parse(char char_crt){
 			}
 			else
 			{
-				return STATE_MACHINE_READY_WITH_ERROR;
+				return STATE_MACHINE_NOT_READY_ERROR;
 			}
 			break;
 		}
@@ -55,14 +54,20 @@ STATE_MACHINE_RETURN_VALUE at_command_parse(char char_crt){
 				at_command_data.node=7;
 				return STATE_MACHINE_NOT_READY;
 			}
+			
 			else if(char_crt == 'O')
 			{
 				at_command_data.node=3;
 				return STATE_MACHINE_NOT_READY;
 			}
+			else if(char_crt >= 31 && char_crt <= 126 && unusual_flag == 1)
+			{
+				at_command_data.node=8;
+				return STATE_MACHINE_NOT_READY;
+			}
 			else
 			{
-				return STATE_MACHINE_READY_WITH_ERROR;
+				return STATE_MACHINE_NOT_READY_ERROR;
 			}
 			break;
 		}
@@ -75,7 +80,7 @@ STATE_MACHINE_RETURN_VALUE at_command_parse(char char_crt){
 			}
 			else
 			{
-				return STATE_MACHINE_READY_WITH_ERROR;
+				return STATE_MACHINE_NOT_READY_ERROR;
 			}
 			break;
 		}
@@ -88,7 +93,7 @@ STATE_MACHINE_RETURN_VALUE at_command_parse(char char_crt){
 			}
 			else
 			{
-				return STATE_MACHINE_READY_WITH_ERROR;
+				return STATE_MACHINE_NOT_READY_ERROR;
 			}
 			break;
 		}
@@ -101,7 +106,7 @@ STATE_MACHINE_RETURN_VALUE at_command_parse(char char_crt){
 			}
 			else
 			{
-				return STATE_MACHINE_READY_WITH_ERROR;
+				return STATE_MACHINE_NOT_READY_ERROR;
 			}
 			break;
 		}
@@ -134,7 +139,7 @@ STATE_MACHINE_RETURN_VALUE at_command_parse(char char_crt){
 					return STATE_MACHINE_NOT_READY;
 				}
 				else
-					return STATE_MACHINE_READY_WITH_ERROR;
+					return STATE_MACHINE_NOT_READY_ERROR;
 				
 			}
 			else if(char_crt == 13)
@@ -144,7 +149,7 @@ STATE_MACHINE_RETURN_VALUE at_command_parse(char char_crt){
 			}
 			else 
 			{
-				return STATE_MACHINE_READY_WITH_ERROR;
+				return STATE_MACHINE_NOT_READY_ERROR;
 			}
 			break;
 		}
@@ -159,7 +164,7 @@ STATE_MACHINE_RETURN_VALUE at_command_parse(char char_crt){
 			}
 			else
 			{
-				return STATE_MACHINE_READY_WITH_ERROR;
+				return STATE_MACHINE_NOT_READY_ERROR;
 			}
 			break;
 		}
@@ -178,7 +183,7 @@ STATE_MACHINE_RETURN_VALUE at_command_parse(char char_crt){
 			}
 			else
 			{
-				return STATE_MACHINE_READY_WITH_ERROR;
+				return STATE_MACHINE_NOT_READY_ERROR;
 			}
 			break;
 		}
@@ -191,7 +196,7 @@ STATE_MACHINE_RETURN_VALUE at_command_parse(char char_crt){
 			}
 			else
 			{
-				return STATE_MACHINE_READY_WITH_ERROR;
+				return STATE_MACHINE_NOT_READY_ERROR;
 			}
 			break;
 		}
@@ -208,7 +213,7 @@ STATE_MACHINE_RETURN_VALUE at_command_parse(char char_crt){
 			}
 			else
 			{
-				return STATE_MACHINE_READY_WITH_ERROR;
+				return STATE_MACHINE_NOT_READY_ERROR;
 			}
 			break;
 		}
@@ -221,7 +226,7 @@ STATE_MACHINE_RETURN_VALUE at_command_parse(char char_crt){
 			}
 			else 
 			{
-				return STATE_MACHINE_READY_WITH_ERROR;
+				return STATE_MACHINE_NOT_READY_ERROR;
 			}
 			break;
 		}
@@ -234,7 +239,7 @@ STATE_MACHINE_RETURN_VALUE at_command_parse(char char_crt){
 			}
 			else
 			{
-				return STATE_MACHINE_READY_WITH_ERROR;
+				return STATE_MACHINE_NOT_READY_ERROR;
 			}
 			break;
 		}
@@ -247,7 +252,7 @@ STATE_MACHINE_RETURN_VALUE at_command_parse(char char_crt){
 			}
 			else
 			{
-				return STATE_MACHINE_READY_WITH_ERROR;
+				return STATE_MACHINE_NOT_READY_ERROR;
 			}
 			break;
 		}
@@ -260,7 +265,7 @@ STATE_MACHINE_RETURN_VALUE at_command_parse(char char_crt){
 			}
 			else
 			{
-				return STATE_MACHINE_READY_WITH_ERROR;
+				return STATE_MACHINE_NOT_READY_ERROR;
 			}
 			break;
 		}
@@ -273,7 +278,7 @@ STATE_MACHINE_RETURN_VALUE at_command_parse(char char_crt){
 			}
 			else
 			{
-				return STATE_MACHINE_READY_WITH_ERROR;
+				return STATE_MACHINE_NOT_READY_ERROR;
 			}
 			break;
 		}
@@ -286,7 +291,7 @@ STATE_MACHINE_RETURN_VALUE at_command_parse(char char_crt){
 			}
 			else
 			{
-				return STATE_MACHINE_READY_WITH_ERROR;
+				return STATE_MACHINE_NOT_READY_ERROR;
 			}
 			break;
 		}
@@ -299,7 +304,7 @@ STATE_MACHINE_RETURN_VALUE at_command_parse(char char_crt){
 			}
 			else
 			{
-				return STATE_MACHINE_READY_WITH_ERROR;
+				return STATE_MACHINE_NOT_READY_ERROR;
 			}
 			break;
 		}
@@ -312,7 +317,7 @@ STATE_MACHINE_RETURN_VALUE at_command_parse(char char_crt){
 			}
 			else
 			{
-				return STATE_MACHINE_READY_WITH_ERROR;
+				return STATE_MACHINE_NOT_READY_ERROR;
 			}
 			break;
 		}
@@ -325,7 +330,7 @@ STATE_MACHINE_RETURN_VALUE at_command_parse(char char_crt){
 			}
 			else
 			{
-				return STATE_MACHINE_READY_WITH_ERROR;
+				return STATE_MACHINE_NOT_READY_ERROR;
 			}
 			break;
 		}
